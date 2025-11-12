@@ -1,19 +1,30 @@
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function Upload() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const router = useRouter()
 
-  if (!session) {
-    router.push('/login')
-    return null
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    }
+  }, [status, router])
+
+  if (status === 'loading' || !session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   const handleUpload = async () => {

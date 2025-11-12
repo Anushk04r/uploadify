@@ -15,20 +15,33 @@ interface Media {
 }
 
 export default function Gallery() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [media, setMedia] = useState<Media[]>([])
   const router = useRouter()
 
-  if (!session) {
-    router.push('/login')
-    return null
-  }
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    }
+  }, [status, router])
 
   useEffect(() => {
-    fetch('/api/media')
-      .then((res) => res.json())
-      .then(setMedia)
-  }, [])
+    if (session) {
+      fetch('/api/media')
+        .then((res) => res.json())
+        .then(setMedia)
+    }
+  }, [session])
+
+  if (status === 'loading' || !session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
