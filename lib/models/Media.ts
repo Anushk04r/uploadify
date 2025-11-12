@@ -1,12 +1,29 @@
-import mongoose from 'mongoose'
+// models/Media.ts
+import mongoose, { Document, Model } from "mongoose";
 
-const mediaSchema = new mongoose.Schema({
+export interface IMedia {
+  userId: string;
+  fileName: string;
+  url: string;
+  type?: string;
+  size?: number;
+  createdAt?: Date;
+  // add any other fields you use
+}
+
+export interface IMediaDocument extends IMedia, Document {}
+
+const MediaSchema = new mongoose.Schema<IMediaDocument>({
   userId: { type: String, required: true },
   fileName: { type: String, required: true },
   url: { type: String, required: true },
   type: { type: String },
   size: { type: Number },
-  createdAt: { type: Date, default: Date.now },
-})
+}, { timestamps: { createdAt: true, updatedAt: false } });
 
-export default mongoose.models.Media || mongoose.model('Media', mediaSchema)
+// reuse existing model when available (prevents OverwriteModelError in dev/hot-reload)
+const Media: Model<IMediaDocument> =
+  (mongoose.models.Media as Model<IMediaDocument>) ||
+  mongoose.model<IMediaDocument>("Media", MediaSchema);
+
+export default Media;
